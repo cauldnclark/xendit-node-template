@@ -1,0 +1,25 @@
+- pipeline: 'Execute: publish service client'
+  ref_name: '((master)|(main))'
+  trigger_mode: 'ON_EVERY_PUSH'
+  trigger_condition: 'ON_CHANGE_AT_PATH'
+  trigger_condition_paths:
+    - clients/node
+  priority: 'NORMAL'
+  fail_on_prepare_env_warning: true
+  actions:
+    - action: 'Execute: npm publish clients/node'
+      type: 'BUILD'
+      working_directory: '/buddy/nodesampleapp'
+      docker_image_name: 'library/node'
+      docker_image_tag: '12'
+      execute_commands:
+        - 'cd clients/node'
+        - 'npm config set @boxbag:registry https://registry.npmjs.org/'
+        - 'npm config set //registry.npmjs.org/:_authToken $NPM_PUBLISH_TOKEN'
+        - 'npm install'
+        - 'npm run build'
+        - 'npm publish'
+      volume_mappings:
+        - '/:/buddy/nodesampleapp'
+      trigger_condition: 'ALWAYS'
+      shell: 'BASH'

@@ -1,0 +1,21 @@
+- pipeline: 'Publish Monitors'
+  trigger_mode: 'ON_EVERY_PUSH'
+  ref_name: 'master'
+  ref_type: 'BRANCH'
+  trigger_condition: 'ON_CHANGE_AT_PATH'
+  trigger_condition_paths:
+    - .deployment/terraform/datadog
+  actions:
+    - action: 'Terraform'
+      type: 'AWS_CLI'
+      working_directory: '/buddy/nodesampleapp'
+      region: 'ap-southeast-1'
+      execute_commands:
+        - 'set -e'
+        - 'chmod +x ./.buddy/scripts/900-publish-monitors.sh'
+        - './.buddy/scripts/900-publish-monitors.sh'
+      volume_mappings:
+        - '/:/buddy/nodesampleapp'
+      trigger_condition: 'ALWAYS'
+      shell: 'BASH'
+      integration_hash: '5e85761fc5f225000f97dd99'

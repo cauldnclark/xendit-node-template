@@ -1,0 +1,87 @@
+name: 'nodesampleapp'
+namespace: 'xenoss-dev'
+pci_scope: non_pci
+environment: staging
+mode: development
+aws_account: 705506614808
+chamber:
+  enabled: true
+  chamber_region: us-west-2
+  kms_key_alias: parameter_store_key
+  paths:
+    - 'staging/development/nodesampleapp'
+
+shared_env:
+  NODE_ENV: 'production'
+  APP_ENV: 'staging'
+  APP_MODE: 'development'
+  APP_AWS_REGION: 'ap-southeast-1'
+  DRY_RUN: 'true'
+  CONNECTION_LIMIT: '5'
+  PAYMENT_FILTER_DATE_COMPENSATION: '1'
+
+datadog:
+  apm:
+    enabled: true
+
+image:
+  repository: 705506614808.dkr.ecr.ap-southeast-1.amazonaws.com/xendit/nodesampleapp
+  pullPolicy: Always
+
+server:
+  enabled: true
+  public:
+    enabled: false
+  traefik:
+    enabled: true
+    hosts:
+      - 'nodesampleapp-dev.ap-southeast-1.priv.stg.tidnex.dev'
+  replicas: 2
+  command: 'node dist/src/server.js'
+  env:
+    SERVICE_NAME: 'nodesampleapp'
+    TRACER_ENV: 'staging-development'
+  resources:
+    requests:
+      cpu: 50m
+      memory: 100Mi
+    limits:
+      cpu: 200m
+      memory: 400Mi
+  livenessProbe:
+    type: http
+    port: 3000
+    path: /healthcheck/liveness
+  readinessProbe:
+    type: http
+    port: 3000
+    path: /healthcheck/readiness
+  service:
+    port: 80
+    targetPort: 3000
+  autoscaling:
+    enabled: true
+    min: 3
+    max: 6
+    metrics:
+      cpu:
+        targetAverageUtilization: 80
+      memory:
+        targetAverageUtilization: 80
+
+worker:
+  enabled: false
+
+cron:
+  enabled: false
+  # crons:
+  # - name: example
+  #   cron: '*/5 * * * *'
+  #   command: "node dist/src/crons/example-cron.ts"
+  #   resources:
+  #     requests:
+  #       cpu: 100m
+  #       memory: 128Mi
+  #     limits:
+  #       cpu: 300m
+  #       memory: 400Mi
